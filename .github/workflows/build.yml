@@ -19,22 +19,28 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: '0'
 
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
           cache: 'gradle'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Grant Execute Permission for Gradlew
-        run: chmod +x gradlew
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          log-accepted-android-sdk-licenses: false
+          cmdline-tools-version: '14742923'
+          packages: 'platforms;android-35 build-tools;35.0.0 platform-tools'
 
       - name: Build Release APK
-        run: ./gradlew assembleRelease --stacktrace
+        run: |
+          echo "sdk.dir=${ANDROID_HOME}" > local.properties
+          chmod +x gradlew
+          ./gradlew assembleRelease --stacktrace
 
       - name: Prepare APK Artifacts
         run: |
@@ -48,11 +54,11 @@ jobs:
           name: Bunker-Url-Test-v1.1.0
           path: release-apk/*.apk
 
-      - name: Create GitHub Release
+      - name: Create or Update GitHub Release
         if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name == 'main' && 'v1.1.0' || github.ref_name }}
+          tag_name: "v1.1.0"
           name: "Bunker URL Test v1.1.0 — Live Network & TSPU Monitor"
           draft: false
           prerelease: false
@@ -62,7 +68,7 @@ jobs:
             🛡️ **BUNKER URL TEST v1.1.0 — Реконструированный и улучшенный монитор доступности сети**
             
             ### ⚡ Что нового и исправлено в v1.1.0:
-            - **Полноценная реконструкция:** Приложение полностью декомпилировано, очищено от мусора и пересобрано на современном Android Gradle стеке (SDK 35, Java 17, Coroutines, WorkManager).
+            - **Полноценная реконструкция:** Приложение полностью декомпилировано, очищено от мусора и пересобрано на современном Android Gradle стеке (SDK 35, Java 17/21, Coroutines, WorkManager).
             - **Устранён критический краш на Android 14–17:** В Foreground Service исправлен пустой `foregroundServiceType=""` на `specialUse`, вызывавший `MissingForegroundServiceTypeException`.
             - **Улучшенный выбор приложений (Searchable App Picker):** Вместо громоздкого диалога на 200+ приложений добавлен мгновенный поиск, фильтрация и кнопки «Выбрать все» / «Сбросить».
             - **Защита от сбоев Resource NotFound:** Добавлена безопасная обработка меток пакетов и системных stub-приложений.
