@@ -34,7 +34,7 @@ jobs:
         with:
           log-accepted-android-sdk-licenses: false
           cmdline-tools-version: '14742923'
-          packages: 'platforms;android-35 build-tools;35.0.0 platform-tools'
+          packages: 'platforms;android-37.0 build-tools;37.0.0 platform-tools'
 
       - name: Build Release APK
         run: |
@@ -68,7 +68,7 @@ jobs:
             🛡️ **BUNKER URL TEST v1.1.0 — Реконструированный и улучшенный монитор доступности сети**
             
             ### ⚡ Что нового и исправлено в v1.1.0:
-            - **Полноценная реконструкция:** Приложение полностью декомпилировано, очищено от мусора и пересобрано на современном Android Gradle стеке (SDK 35, Java 17/21, Coroutines, WorkManager).
+            - **Полноценная реконструкция:** Приложение полностью декомпилировано, очищено от мусора и пересобрано на современном Android Gradle стеке (SDK 37, Java 17/21, Coroutines, WorkManager).
             - **Устранён критический краш на Android 14–17:** В Foreground Service исправлен пустой `foregroundServiceType=""` на `specialUse`, вызывавший `MissingForegroundServiceTypeException`.
             - **Улучшенный выбор приложений (Searchable App Picker):** Вместо громоздкого диалога на 200+ приложений добавлен мгновенный поиск, фильтрация и кнопки «Выбрать все» / «Сбросить».
             - **Защита от сбоев Resource NotFound:** Добавлена безопасная обработка меток пакетов и системных stub-приложений.
