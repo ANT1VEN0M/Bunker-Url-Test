@@ -8,12 +8,26 @@ android {
 
     defaultConfig {
         applicationId = "com.bunker.urltest"
-        minSdk = 26
+        minSdk = 24
         targetSdk = 35
-        versionCode = 6
-        versionName = "1.1.1"
+        versionCode = 7
+        versionName = "1.1.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        ndk {
+            abiFilters.addAll(listOf("arm64-v8a", "armeabi-v7a", "x86_64", "x86"))
+        }
+    }
+
+    signingConfigs {
+        create("release") {
+            storeFile = file("bunker-release.jks")
+            storePassword = "bunker2026"
+            keyAlias = "bunker"
+            keyPassword = "bunker2026"
+            enableV1Signing = true
+            enableV2Signing = true
+        }
     }
 
     buildTypes {
@@ -23,7 +37,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
