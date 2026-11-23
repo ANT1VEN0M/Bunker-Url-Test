@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:windowBackground">@color/bunker_bg</item>
+        <item name="android:colorAccent">@color/bunker_red</item>
+        <item name="android:statusBarColor">@color/bunker_bg</item>
+        <item name="android:navigationBarColor">@color/bunker_bg</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="colorAccent">@color/bunker_red</item>
+        <item name="colorPrimary">@color/bunker_red</item>
+        <item name="colorSurface">@color/bunker_surface</item>
+    </style>
+</resources>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:id="@+id/widget_root"
+    android:background="@drawable/widget_bg"
+    android:padding="14dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <TextView
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:textColor="#ffffff"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="BUNKER / LIVE STATUS"/>
+    <TextView
+        android:textColor="#dde0ea"
+        android:gravity="center_vertical"
+        android:id="@+id/widget_google"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:text="Google • —"
+        android:layout_weight="1"/>
+    <TextView
+        android:textColor="#dde0ea"
+        android:gravity="center_vertical"
+        android:id="@+id/widget_telegram"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:text="Telegram • —"
+        android:layout_weight="1"/>
+    <TextView
+        android:textColor="#dde0ea"
+        android:gravity="center_vertical"
+        android:id="@+id/widget_instagram"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:text="Instagram • —"
+        android:layout_weight="1"/>
+    <TextView
+        android:textColor="#dde0ea"
+        android:gravity="center_vertical"
+        android:id="@+id/widget_youtube"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:text="YouTube • —"
+        android:layout_weight="1"/>
+    <TextView
+        android:textColor="#dde0ea"
+        android:gravity="center_vertical"
+        android:id="@+id/widget_custom"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:text="Свой сервис • —"
+        android:layout_weight="1"/>
+    <TextView
+        android:textColor="#b79cff"
+        android:gravity="end"
+        android:id="@+id/widget_refresh"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="↻ ОБНОВИТЬ"/>
+</LinearLayout>

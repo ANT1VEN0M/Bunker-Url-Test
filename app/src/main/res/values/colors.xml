@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bunker_bg">#090a0c</color>
+    <color name="bunker_surface">#131519</color>
+    <color name="bunker_surface_raised">#1a1d22</color>
+    <color name="bunker_border">#292d34</color>
+    <color name="bunker_text">#f2f3f5</color>
+    <color name="bunker_text_secondary">#a3a8b2</color>
+    <color name="bunker_text_muted">#747b86</color>
+    <color name="bunker_red">#e0444e</color>
+    <color name="bunker_red_pressed">#b8323c</color>
+    <color name="bunker_red_soft">#35191d</color>
+    <color name="bunker_success">#45b879</color>
+    <color name="bunker_warning">#e5ae4b</color>
+    <color name="bunker_error">#e0444e</color>
+    <color name="bunker_info">#75a7e8</color>
+</resources>

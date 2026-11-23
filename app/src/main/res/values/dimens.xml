@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="bunker_screen_padding">16dp</dimen>
+    <dimen name="bunker_section_gap">24dp</dimen>
+    <dimen name="bunker_space_xs">4dp</dimen>
+    <dimen name="bunker_space_sm">8dp</dimen>
+    <dimen name="bunker_space_md">12dp</dimen>
+    <dimen name="bunker_space_lg">16dp</dimen>
+    <dimen name="bunker_space_xxl">32dp</dimen>
+    <dimen name="bunker_touch_target">48dp</dimen>
+    <dimen name="bunker_card_corner">12dp</dimen>
+</resources>

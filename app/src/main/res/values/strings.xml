@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">BUNKER URL TEST</string>
+    <string name="tile_label">BUNKER URL TEST</string>
+    <string name="tile_active">BUNKER: активно</string>
+    <string name="app_dialog_title">Какие приложения проверять?</string>
+    <string name="search_hint">Поиск приложения...</string>
+    <string name="btn_save">СОХРАНИТЬ</string>
+    <string name="btn_cancel">ОТМЕНА</string>
+    <string name="select_all">ВЫБРАТЬ ВСЕ</string>
+    <string name="clear_all">СБРОСИТЬ</string>
+</resources>
