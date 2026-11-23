@@ -43,7 +43,7 @@ object UrlChecker {
 
             val responseCode = conn.responseCode
             val latencyMs = (System.nanoTime() - startTime) / 1_000_000
-            CheckResult(t.first, t.second, latencyMs, Integer.valueOf(responseCode))
+            CheckResult(t.first, t.second, latencyMs, responseCode)
         } catch (_: Exception) {
             CheckResult(t.first, t.second, null, null)
         } finally {

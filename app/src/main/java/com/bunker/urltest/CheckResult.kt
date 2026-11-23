@@ -4,7 +4,7 @@ data class CheckResult(
     val id: String,
     val title: String,
     val latencyMs: Long?,
-    val httpCode: Integer?
+    val httpCode: Int?
 ) {
     val available: Boolean
         get() = httpCode != null
