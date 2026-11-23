@@ -15,10 +15,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 
 class UrlTestMonitorService : Service() {
 
@@ -89,14 +93,28 @@ class UrlTestMonitorService : Service() {
             val appLabels = installedAppLabels()
             while (isActive) {
                 val targets = UrlChecker.targets(this@UrlTestMonitorService)
-                val serviceResults = targets.map { UrlChecker.check(it) }
+                val serviceResults = coroutineScope {
+                    targets.map { target ->
+                        async {
+                            withTimeoutOrNull(2600L) {
+                                UrlChecker.check(target)
+                            } ?: CheckResult(target.first, target.second, null, null)
+                        }
+                    }.awaitAll()
+                }
 
                 val selectedAppPackages = getSharedPreferences("selected_apps", Context.MODE_PRIVATE)
                     .getStringSet("packages", emptySet()) ?: emptySet()
 
-                val appResults = selectedAppPackages.map { pkg ->
-                    val label = appLabels[pkg] ?: pkg
-                    AppNetworkChecker.check(pkg, label)
+                val appResults = coroutineScope {
+                    selectedAppPackages.map { pkg ->
+                        async {
+                            val label = appLabels[pkg] ?: pkg
+                            withTimeoutOrNull(3000L) {
+                                AppNetworkChecker.check(pkg, label)
+                            } ?: AppNetworkResult(pkg, label, emptyList(), emptyList(), null, false)
+                        }
+                    }.awaitAll()
                 }
 
                 val availableServices = serviceResults.count { it.available }

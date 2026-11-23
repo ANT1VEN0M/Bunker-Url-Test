@@ -20,16 +20,23 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
@@ -76,7 +83,24 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContentView(R.layout.activity_main)
+
+        val container = findViewById<LinearLayout>(R.id.mainContentContainer)
+        ViewCompat.setOnApplyWindowInsetsListener(container) { view, insets ->
+            val bars = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+            )
+            val sidePadding = resources.getDimensionPixelSize(R.dimen.bunker_screen_padding)
+            val basePaddingBottom = resources.getDimensionPixelSize(R.dimen.bunker_space_xxl)
+            view.setPadding(
+                sidePadding + bars.left,
+                bars.top + 16,
+                sidePadding + bars.right,
+                basePaddingBottom + bars.bottom
+            )
+            insets
+        }
 
         summary = findViewById(R.id.summary)
         results = findViewById(R.id.results)
@@ -262,7 +286,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun prepareRows(targets: List<Triple<String, String, String>>) {
+    private fun syncRows(targets: List<Triple<String, String, String>>) {
+        val currentKeys = rows.keys.toList()
+        val newKeys = targets.map { it.first }
+        if (currentKeys == newKeys && results.childCount > 0) {
+            return
+        }
+
         results.removeAllViews()
         rows.clear()
 
@@ -275,7 +305,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             val statusTv = TextView(this).apply {
-                text = "◌  ${target.second}\nОжидание проверки…"
+                text = "◌  ${target.second}\nПроверка…"
                 textSize = 14f
                 setTextColor(ContextCompat.getColor(this@MainActivity, R.color.bunker_text_secondary))
                 setPadding(10, 8, 8, 8)
@@ -299,26 +329,37 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun updateTargetRow(result: CheckResult) {
+        val view = rows[result.id] ?: return
+        val dot = if (result.available) "🟢" else "🔴"
+        view.text = "$dot  ${result.title}\n${result.label}"
+        val colorRes = if (result.available) R.color.bunker_success else R.color.bunker_error
+        view.setTextColor(ContextCompat.getColor(this@MainActivity, colorRes))
+    }
+
     private fun startMonitoring() {
         monitoringJob?.cancel()
         monitoringJob = lifecycleScope.launch {
             while (isActive && monitoring) {
                 val targets = UrlChecker.targets(this@MainActivity)
-                prepareRows(targets)
+                syncRows(targets)
 
-                val resultsList = withContext(Dispatchers.IO) {
-                    targets.map { UrlChecker.check(it) }
+                val deferreds = targets.map { target ->
+                    async(Dispatchers.IO) {
+                        val result = withTimeoutOrNull(2600L) {
+                            UrlChecker.check(target)
+                        } ?: CheckResult(target.first, target.second, null, null)
+
+                        withContext(Dispatchers.Main) {
+                            updateTargetRow(result)
+                        }
+                        result
+                    }
                 }
 
-                for (result in resultsList) {
-                    val view = rows[result.id] ?: continue
-                    val dot = if (result.available) "🟢" else "🔴"
-                    view.text = "$dot  ${result.title}\n${result.label}"
-                    val colorRes = if (result.available) R.color.bunker_success else R.color.bunker_error
-                    view.setTextColor(ContextCompat.getColor(this@MainActivity, colorRes))
-                }
-
+                val resultsList = deferreds.awaitAll()
                 UrlTestWidget.render(this@MainActivity, resultsList)
+
                 checkSelectedApps()
                 delay(15_000)
             }
@@ -328,17 +369,27 @@ class MainActivity : AppCompatActivity() {
     private suspend fun checkSelectedApps() {
         val prefs = getSharedPreferences("selected_apps", Context.MODE_PRIVATE)
         val selected = prefs.getStringSet("packages", emptySet()) ?: emptySet()
+        if (selected.isEmpty()) return
+
         val installed = installedLaunchableApps().associateBy { it.packageName }
 
-        for (pkg in selected) {
-            val label = installed[pkg]?.label ?: pkg
-            val appResult = AppNetworkChecker.check(pkg, label)
-            val view = appStatusViews[pkg] ?: continue
+        coroutineScope {
+            selected.map { pkg ->
+                async(Dispatchers.IO) {
+                    val label = installed[pkg]?.label ?: pkg
+                    val appResult = withTimeoutOrNull(3000L) {
+                        AppNetworkChecker.check(pkg, label)
+                    } ?: AppNetworkResult(pkg, label, emptyList(), emptyList(), null, false)
 
-            val dot = if (appResult.isAvailable) "🟢" else "🔴"
-            view.text = "$dot  ${appResult.statusText}"
-            val colorRes = if (appResult.isAvailable) R.color.bunker_success else R.color.bunker_error
-            view.setTextColor(ContextCompat.getColor(this, colorRes))
+                    withContext(Dispatchers.Main) {
+                        val view = appStatusViews[pkg] ?: return@withContext
+                        val dot = if (appResult.isAvailable) "🟢" else "🔴"
+                        view.text = "$dot  ${appResult.statusText}"
+                        val colorRes = if (appResult.isAvailable) R.color.bunker_success else R.color.bunker_error
+                        view.setTextColor(ContextCompat.getColor(this@MainActivity, colorRes))
+                    }
+                }
+            }
         }
     }
 
@@ -521,7 +572,15 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             val resultsList = withContext(Dispatchers.IO) {
-                targets.map { UrlChecker.check(it) }
+                coroutineScope {
+                    targets.map { target ->
+                        async {
+                            withTimeoutOrNull(2600L) {
+                                UrlChecker.check(target)
+                            } ?: CheckResult(target.first, target.second, null, null)
+                        }
+                    }.awaitAll()
+                }
             }
             val available = resultsList.count { it.available }
             val blocked = resultsList.filterNot { it.available }

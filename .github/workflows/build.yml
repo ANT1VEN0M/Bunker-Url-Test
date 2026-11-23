@@ -51,27 +51,27 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Bunker-Url-Test-v1.1.0
+          name: Bunker-Url-Test-v1.1.1
           path: release-apk/*.apk
 
       - name: Create or Update GitHub Release
         if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: "v1.1.0"
-          name: "Bunker URL Test v1.1.0 — Live Network & TSPU Monitor"
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.1.1' }}
+          name: "Bunker URL Test v1.1.1 — Fast Parallel Monitor & Insets Fix"
           draft: false
           prerelease: false
           make_latest: true
           files: release-apk/*.apk
           body: |
-            🛡️ **BUNKER URL TEST v1.1.0 — Реконструированный и улучшенный монитор доступности сети**
+            🛡️ **BUNKER URL TEST v1.1.1 — Hotfix: быстрые параллельные проверки и исправление отступов шторки**
             
-            ### ⚡ Что нового и исправлено в v1.1.0:
-            - **Полноценная реконструкция:** Приложение полностью декомпилировано, очищено от мусора и пересобрано на современном Android Gradle стеке (SDK 37, Java 17/21, Coroutines, WorkManager).
-            - **Устранён критический краш на Android 14–17:** В Foreground Service исправлен пустой `foregroundServiceType=""` на `specialUse`, вызывавший `MissingForegroundServiceTypeException`.
-            - **Улучшенный выбор приложений (Searchable App Picker):** Вместо громоздкого диалога на 200+ приложений добавлен мгновенный поиск, фильтрация и кнопки «Выбрать все» / «Сбросить».
-            - **Защита от сбоев Resource NotFound:** Добавлена безопасная обработка меток пакетов и системных stub-приложений.
-            - **Адаптивные таймауты сети (3500 мс):** Предотвращены ложные срабатывания «НЕТ ДОСТУПА» на мобильных операторах при медленном TLS-хэндшейке.
-            - **Расширенная база сервисов:** Встроены цели Discord, ChatGPT, Steam, Spotify, X/Twitter, Cloudflare и более 50 профилей приложений.
-            - **Виджет и шторка (Quick Settings Tile):** Автономный мониторинг статуса сети прямо с домашнего экрана и панели быстрых настроек.
+            ### ⚡ Что исправлено в v1.1.1:
+            - **Исправлен отступ шторки и навигационной панели (Edge-to-Edge Fix):** Добавлена правильная обработка `WindowInsets` (`systemBars` и `displayCutout`), благодаря чему заголовок больше не залезает под статус-бар/вырез камеры ("под шторку"), а нижние кнопки не перекрываются системными кнопками навигации.
+            - **Только 4 ключевых сервиса по умолчанию:** Список сокращён до 4 самых востребованных (Google, Telegram, Instagram, YouTube). Всё остальное пользователь при желании может добавить через кнопку «Добавить сервис».
+            - **Устранена "бесконечная проверка":**
+              * Все проверки теперь выполняются **параллельно** через корутины (`async`/`awaitAll`), а не по очереди.
+              * Результаты каждого сервиса обновляются на экране **мгновенно** по мере завершения пинга, не дожидаясь остальных.
+              * Добавлен строгий таймаут `withTimeoutOrNull` (2500 мс) и заголовок `Connection: close`, исключающий зависание сокетов при блокировке ТСПУ.
+              * Убран сброс карточек в «Ожидание проверки…» на каждом 15-секундном цикле — результат сохраняется и плавно обновляется.

@@ -115,10 +115,12 @@ object AppNetworkChecker {
             val url = URL("https://$host/")
             conn = url.openConnection() as HttpURLConnection
             conn.requestMethod = "GET"
-            conn.connectTimeout = 3500
-            conn.readTimeout = 3500
+            conn.connectTimeout = 2500
+            conn.readTimeout = 2500
             conn.instanceFollowRedirects = true
-            conn.setRequestProperty("User-Agent", "BUNKER-URL-TEST/1.1")
+            conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36")
+            conn.setRequestProperty("Connection", "close")
+            conn.setRequestProperty("Accept", "*/*")
             conn.setRequestProperty("Range", "bytes=0-0")
             conn.responseCode
             val latency = (System.nanoTime() - startTime) / 1_000_000
@@ -126,7 +128,10 @@ object AppNetworkChecker {
         } catch (_: Throwable) {
             Pair(false, null)
         } finally {
-            conn?.disconnect()
+            try {
+                conn?.disconnect()
+            } catch (_: Exception) {
+            }
         }
     }
 
