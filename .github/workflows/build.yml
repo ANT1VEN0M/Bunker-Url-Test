@@ -45,7 +45,8 @@ jobs:
       - name: Prepare APK Artifacts
         run: |
           mkdir -p release-apk
-          cp app/build/outputs/apk/release/*.apk release-apk/Bunker-Url-Test-v1.1.0.apk || cp app/build/outputs/apk/debug/*.apk release-apk/Bunker-Url-Test-v1.1.0.apk
+          TAG_NAME="${GITHUB_REF_NAME:-v1.1.1}"
+          cp app/build/outputs/apk/release/*.apk "release-apk/Bunker-Url-Test-${TAG_NAME}.apk" || cp app/build/outputs/apk/debug/*.apk "release-apk/Bunker-Url-Test-${TAG_NAME}.apk"
           ls -la release-apk/
 
       - name: Upload Artifact
